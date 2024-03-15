@@ -6,12 +6,13 @@ class Net(nn.Module):
 
     def __init__(self,input_dim,output_dim,c):
         super(Net, self).__init__()
+        self.input_dim = input_dim
         if type(input_dim) is tuple:
-            input_dim = self.get_flattened_dim(input_dim)
+            self.input_dim = self.get_flattened_dim(input_dim)
 
         self.output_dim = output_dim
 
-        self.fc1 = nn.Linear(input_dim, 400,bias=False)
+        self.fc1 = nn.Linear(self.input_dim, 400,bias=False)
         self.fc2 = nn.Linear(400, 400,bias=False)
         self.fc3 = nn.Linear(400, self.get_flattened_dim(output_dim),bias=False)
         self.act = torch.nn.Sigmoid()
@@ -19,7 +20,7 @@ class Net(nn.Module):
 
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc1(x.reshape(x.shape[0],+self.input_dim)))
         x = F.relu(self.fc2(x))
         x = self.fc3(x).reshape((x.shape[0],)+self.output_dim)
         return x/self.c

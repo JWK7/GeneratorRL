@@ -20,6 +20,7 @@ import dmbrl.modeling.Model
 #         nn
 #
 #     log_cfg: (logging configuration)
+#         loss
 def create_config(env_name,ctrl_arg):
     cfg = DotMap(
     )

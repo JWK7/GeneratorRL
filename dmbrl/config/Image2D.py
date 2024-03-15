@@ -50,14 +50,15 @@ class Image1DConfigModule:
         pass
 
     def sample(self):
-        I0 = np.expand_dims(DataFunctions.NoiseImage((self.exp_cfg.data_size,self.exp_cfg.image_dim)),-1)
+        I0 = DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+self.exp_cfg.image_dim))
         x , Ix = DataFunctions.Translation1DImage(I0,self.exp_cfg.T,self.exp_cfg.ground_truth_generator)
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
         xG = self.CombineGenerators(generator_target_index,generators,I0,x)
         xGI0 = torch.linalg.matmul(xG.float(),I0)
-
+        print(xGI0.shape)
+        exit()
         loss = nn.MSELoss()
         generators[generator_target_index].optimG.zero_grad()
         grad = loss(xGI0.squeeze(),deltaI.squeeze())
