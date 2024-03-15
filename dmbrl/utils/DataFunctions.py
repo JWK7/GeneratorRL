@@ -15,4 +15,8 @@ def Translation1DImage(I0: np.ndarray, x: float, G: np.ndarray) -> np.ndarray:
     xs[xs==0] = -1
     xs = xs*x
     Ix = np.matmul(scipy.linalg.expm(xs*G),I0)
+<<<<<<< HEAD
     return xs,Ix
+=======
+    return xs,Ix
+>>>>>>> 8087237a3cd80c1dbf3a539460c2d78da0522f14
