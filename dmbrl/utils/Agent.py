@@ -26,18 +26,10 @@ class Agent:
             plt.close()
             np.savetxt('outputs/G_'+str(generator_count)+'.csv', pred.numpy(), delimiter=',')
             generator_count += 1
-<<<<<<< HEAD
-            print(pred)
-=======
->>>>>>> 8087237a3cd80c1dbf3a539460c2d78da0522f14
         plt.plot(np.array(self.params.log_cfg.loss))
         plt.savefig('outputs/loss.png')
 
         combined_generator = self.params.tool_cfg.CombineGenerators(0,self.params.tool_cfg.nn,I0,x)[0].detach()
-<<<<<<< HEAD
-        print(combined_generator)
-=======
->>>>>>> 8087237a3cd80c1dbf3a539460c2d78da0522f14
         heatmap= sns.heatmap(combined_generator)
         plt.savefig('outputs/heat_xG_combined.png')
         plt.close()

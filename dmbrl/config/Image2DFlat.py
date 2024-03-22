@@ -23,11 +23,11 @@ class Image1DConfigModule:
 
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image1D'
-        self.exp_cfg.iteration = 200
+        self.exp_cfg.iteration = 1000
         self.exp_cfg.alpha = 0.0001
         self.exp_cfg.beta = 0.0001
         self.exp_cfg.data_size = 50
-        self.exp_cfg.num_generators = 1
+        self.exp_cfg.num_generators = 2
         self.exp_cfg.image_dim = (20*20,)
         self.exp_cfg.generator_dim = (20*20,20*20)
         self.exp_cfg.T = 0.5
@@ -51,9 +51,13 @@ class Image1DConfigModule:
 
     def sample(self):
         I0 = DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+(20,20)))
-        x , Ix = DataFunctions.Translation1DImage(I0,self.exp_cfg.T,self.exp_cfg.ground_truth_generator)
+        # x , Ix = DataFunctions.Translation1DImage(I0,self.exp_cfg.T,self.exp_cfg.ground_truth_generator)
+
+        x,Ix = DataFunctions.Translation2DImage(I0,self.exp_cfg.T,self.exp_cfg.ground_truth_generator)
         I0= I0.reshape((self.exp_cfg.data_size,)+(20*20,1))
         Ix = Ix.reshape((self.exp_cfg.data_size,)+(20*20,1))
+
+
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
