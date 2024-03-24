@@ -30,15 +30,23 @@ def Translation2DImage(I0,x,G):
     I0_ = np.reshape(I0,I0.shape[0:3])
 
     I0_[0] = ProcessImage((20,20))
-    xs = np.random.randint(0,2,(I0.shape[0]))
-    xs[xs==0] = -1
-    xs = xs*x
-    Ix = np.zeros(I0.shape)
-    for _ in range(G.ndim): xs = np.expand_dims(xs,-1) 
-    expxG = scipy.linalg.expm(xs*G)
+    xs1 = np.random.randint(0,2,(I0.shape[0]))
+    xs1[xs1==0] = -1
+    xs1 = xs1*x
 
-    I0_ = np.matmul(expxG,I0_)
-    Ix = np.matmul(I0_,expxG)
+    xs2 = np.random.randint(0,2,(I0.shape[0]))
+    xs2[xs2==0] = -1
+    xs2 = xs2*x
+
+    Ix = np.zeros(I0.shape)
+    for _ in range(G.ndim): 
+        xs1 = np.expand_dims(xs1,-1) 
+        xs2 = np.expand_dims(xs2,-1) 
+    expxG1 = scipy.linalg.expm(xs1*G)
+    expxG2 = scipy.linalg.expm(xs2*G)
+
+    I0_ = np.matmul(expxG1,I0_)
+    Ix = np.matmul(I0_,expxG2)
     Ix = np.expand_dims(Ix,(-1,-2))
     return xs,Ix
 

@@ -24,8 +24,8 @@ class Image1DConfigModule:
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image1D'
         self.exp_cfg.iteration = 1000
-        self.exp_cfg.alpha = 0.0001
-        self.exp_cfg.beta = 0.0001
+        self.exp_cfg.alpha = 0.00001
+        self.exp_cfg.beta = 0.00001
         self.exp_cfg.data_size = 50
         self.exp_cfg.num_generators = 2
         self.exp_cfg.image_dim = (20*20,)
