@@ -33,7 +33,6 @@ def create_config(env_name,ctrl_arg):
     cfg_module = cfg_source.CONFIG_MODULE()
 
     _create_cfg(cfg,cfg_module)
-
     return cfg
 
 

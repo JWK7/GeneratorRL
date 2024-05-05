@@ -4,20 +4,48 @@ import cv2
 import scipy
 
 #Create Random Noise Image
-@staticmethod
 def NoiseImage(image_size: tuple) -> np.ndarray:
     if type(image_size) is not tuple:
         print('NoiseImage Function Must Input Tuple')
         exit()
     return np.random.randint(0,255,image_size)
 
-@staticmethod
 def Translation1DImage(I0: np.ndarray, x: float, G: np.ndarray) -> np.ndarray:
     xs = np.random.randint(0,2,(I0.shape[0],1,1))
     xs[xs==0] = -1
     xs = xs*x
     Ix = np.matmul(scipy.linalg.expm(xs*G),I0)
-    return xs,Ix
+    return np.array([xs]),Ix
+
+def Rotate2D(I0: np.ndarray,x: float):
+    xs = np.random.randint(0,2,(I0.shape[0],1,1))
+    xs[xs==0] = -1
+    xs = xs*x
+
+    rotated = np.zeros(I0.shape)
+    for i in range(I0.shape[0]): rotated[i] = scipy.ndimage.rotate(I0[i], xs[i,0,0], axes=(1,0),reshape=False,mode = 'wrap')
+
+    return np.array([xs]), rotated
+
+def Rotate3D(I0: np.ndarray,x: float):
+    xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
+    xs1[xs1==0] = -1
+    xs1 = xs1*x
+
+    xs2 = np.random.randint(0,2,(I0.shape[0],1,1))
+    xs2[xs2==0] = -1
+    xs2 = xs2*x
+
+    xs3 = np.random.randint(0,2,(I0.shape[0],1,1))
+    xs3[xs3==0] = -1
+    xs3 = xs3*x
+
+    rotated = np.zeros(I0.shape)
+    for i in range(I0.shape[0]):
+        rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(1,0),reshape=False,mode = 'wrap')
+        rotated[i] = scipy.ndimage.rotate(I0[i], xs2[i,0,0], axes=(2,1),reshape=False,mode = 'wrap')
+        rotated[i] = scipy.ndimage.rotate(I0[i], xs3[i,0,0], axes=(0,2),reshape=False,mode = 'wrap')
+    return np.array([xs1,xs2,xs3]), rotated
 
 
 def ProcessImage(ImageSize: tuple):
@@ -48,10 +76,33 @@ def Translation2DImage(I0,x,G):
     I0_ = np.matmul(expxG1,I0_)
     Ix = np.matmul(I0_,expxG2)
     Ix = np.expand_dims(Ix,(-1,-2))
-    return xs,Ix
+    return np.array([xs1,xs2]),Ix
 
 
-@staticmethod
+def Translation2DImageNoise(I0,x,G):
+    I0_ = np.reshape(I0,I0.shape[0:3])
+
+    I0_[0] = ProcessImage((20,20))
+    xs1 = np.random.uniform(0,1,(I0.shape[0]))
+    xs1[xs1==0] = -1
+    xs1 = xs1*x
+
+    xs2 = np.random.randint(0,1,(I0.shape[0]))
+    xs2[xs2==0] = -1
+    xs2 = xs2*x
+
+    Ix = np.zeros(I0.shape)
+    for _ in range(G.ndim): 
+        xs1 = np.expand_dims(xs1,-1) 
+        xs2 = np.expand_dims(xs2,-1) 
+    expxG1 = scipy.linalg.expm(xs1*G)
+    expxG2 = scipy.linalg.expm(xs2*G)
+
+    I0_ = np.matmul(expxG1,I0_)
+    Ix = np.matmul(I0_,expxG2)
+    Ix = np.expand_dims(Ix,(-1,-2))
+    return np.array([xs1,xs2]),Ix
+
 # Print iterations progress
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     """

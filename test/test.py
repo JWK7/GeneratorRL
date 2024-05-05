@@ -11,7 +11,9 @@ def test2DImage():
 
 
     processed = ProcessImage((20,20)).flatten()
-    futImage = np.matmul(scipy.linalg.expm((-0.5 * predG1 + -0.5 * predG2)),processed)
+    # futImage = np.matmul(scipy.linalg.expm((0* predG1+ 1 * predG2  )),processed)
+
+    futImage = np.matmul((0* predG1+ 2 * predG2 ),processed)+ processed
 
     expxG = scipy.linalg.expm(-1*trueG)
     print(expxG.shape)

@@ -8,7 +8,7 @@ from dotmap import DotMap
 import torch
 import torch.nn as nn
 
-class Image1DConfigModule:
+class Image2DRotConfigModule:
 
     def __init__(self):
 
@@ -22,16 +22,15 @@ class Image1DConfigModule:
         self._create_log_cfg()
 
     def _create_exp_cfg(self):
-        self.exp_cfg.env = 'Image1D'
-        self.exp_cfg.iteration = 2000
-        self.exp_cfg.alpha = 0.01
-        self.exp_cfg.beta = 0.01
+        self.exp_cfg.env = 'Image2DRot'
+        self.exp_cfg.iteration = 5000
+        self.exp_cfg.alpha = 0.00001
+        self.exp_cfg.beta = 0.00001
         self.exp_cfg.data_size = 50
         self.exp_cfg.num_generators = 1
-        self.exp_cfg.image_dim = (20,)
-        self.exp_cfg.generator_dim = (20,20)
-        self.exp_cfg.T = 0.5
-        self.exp_cfg.ground_truth_generator = np.reshape(pd.read_csv("dmbrl/assets/Translation1D20Pixels.csv",header=None).to_numpy(),self.exp_cfg.generator_dim)
+        self.exp_cfg.image_dim = (20*20,)
+        self.exp_cfg.generator_dim = (20*20,20*20)
+        self.exp_cfg.T = 5
     
     def _create_tool_cfg(self):
 
@@ -50,8 +49,12 @@ class Image1DConfigModule:
         pass
 
     def sample(self):
-        I0 = np.expand_dims(DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+self.exp_cfg.image_dim)),-1)
-        x , Ix = DataFunctions.Translation1DImage(I0,self.exp_cfg.T,self.exp_cfg.ground_truth_generator)
+        I0 = DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+(20,20)))
+
+        x,Ix = DataFunctions.Rotate2D(I0,self.exp_cfg.T)
+        I0= I0.reshape((self.exp_cfg.data_size,)+(20*20,1))
+        Ix = Ix.reshape((self.exp_cfg.data_size,)+(20*20,1))
+
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
@@ -84,4 +87,4 @@ class Image1DConfigModule:
         return xG + self.CombineGenerators(generator_target_index-1,generators[1:],I0,x[1:])
 
 
-CONFIG_MODULE = Image1DConfigModule
+CONFIG_MODULE = Image2DRotConfigModule
