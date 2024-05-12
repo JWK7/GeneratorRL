@@ -19,6 +19,9 @@ def main(env,ctrl_args):
     pass
 
 if __name__ == "__main__":
+
+
+
     parse = argparse.ArgumentParser()
     parse.add_argument('-env',type=str, required = True)
     parse.add_argument('-ca', '--ctrl_arg', action= 'append', nargs=2, default = [])

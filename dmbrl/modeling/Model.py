@@ -34,7 +34,7 @@ class Model2D():
         torch.save(self.optimx.state_dict(),"optimx.pt")
 
 class Model3D():
-    def __init__(self,learningRateG,learningRatex,image_dim,generator_dim,c = 100000):
+    def __init__(self,learningRateG,learningRatex,image_dim,generator_dim,c = 1000000):
         self.GNet = NeuralNet.Net(image_dim,generator_dim,c)
         self.xNet = NeuralNet.Net(image_dim,(1,),c)
         self.optimG = Adam(self.GNet.parameters(), lr=learningRateG)

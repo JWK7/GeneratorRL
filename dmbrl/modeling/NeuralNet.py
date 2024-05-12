@@ -11,9 +11,9 @@ class Net(nn.Module):
 
         self.output_dim = output_dim
 
-        self.fc1 = nn.Linear(input_dim, 400,bias=False)
-        self.fc2 = nn.Linear(400, 400,bias=False)
-        self.fc3 = nn.Linear(400, self.get_flattened_dim(output_dim),bias=False)
+        self.fc1 = nn.Linear(input_dim, 1000,bias=False)
+        self.fc2 = nn.Linear(1000, 1000,bias=False)
+        self.fc3 = nn.Linear(1000, self.get_flattened_dim(output_dim),bias=False)
         self.act = torch.nn.Sigmoid()
         self.c = c
 

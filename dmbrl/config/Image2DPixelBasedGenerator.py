@@ -23,13 +23,13 @@ class Image2DXYConfigModule:
 
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image2DXY'
-        self.exp_cfg.iteration = 5000
+        self.exp_cfg.iteration = 100
         self.exp_cfg.alpha = 0.0001
         self.exp_cfg.beta = 0.0001
         self.exp_cfg.data_size = 50
         self.exp_cfg.num_generators = 2
         self.exp_cfg.image_dim = (20*20,)
-        self.exp_cfg.generator_dim = (20*20,20*20)
+        self.exp_cfg.generator_dim = (3,3)
         self.exp_cfg.T = 1
         self.exp_cfg.ground_truth_generator = np.reshape(pd.read_csv("dmbrl/assets/Translation1D20Pixels.csv",header=None).to_numpy(),(20,20))
     
@@ -62,7 +62,7 @@ class Image2DXYConfigModule:
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
         xG = self.CombineGenerators(generator_target_index,generators,I0,x)
-        xGI0 = torch.linalg.matmul(xG.float(),I0)
+        xGI0 = self.ApplyGenerator(xG.float(),I0)
 
         loss = nn.MSELoss()
         generators[generator_target_index].optimG.zero_grad()
@@ -78,16 +78,29 @@ class Image2DXYConfigModule:
     def CombineGenerators(self,generator_target_index,generators,I0,x):
         #Keeps gradience for targeted generator
         if generator_target_index == 0:
-            # xG = generators[0].xNet(I0).detach() * generators[0].GNet(I0)
             xG = x[0] * generators[0].GNet(I0.squeeze())
-        else:
-            # xG = generators[0].xNet(I0).detach() * generators[0].GNet(I0).detach()
-            xG = x[0] * generators[0].GNet(I0.squeeze()).detach()
 
+        else:
+            xG = x[0] * generators[0].GNet(I0.squeeze()).detach()
         if len(generators) == 1:
             return xG
 
         return xG + self.CombineGenerators(generator_target_index-1,generators[1:],I0,x[1:])
+
+    def ApplyGenerator(self,generator,I0):
+        xGI0 = torch.zeros(I0.shape, dtype=generator.dtype)
+        xGI0[:,0,0] = generator[:,0,0]
+        xGI0[:,0,0] = 0
+        for i in range((I0.shape[1])):
+            for j in range((I0.shape[2])):
+                loc = torch.matmul(generator,torch.tensor(([[[j],[i],[1]]])).float())[:,:,0].int()
+                xGI0[:,loc[:,1]%I0.shape[1],loc[:,0]%I0.shape[2]] = I0[:,i,j]
+
+        # print(generator.data)
+        # xGI0.grad_fn.copy_(generator.grad_fn)
+        # print(xGI0.grad_fn)
+        # xGI0.grad.copy_(generator.grad_fn)
+        return xGI0
 
 
 CONFIG_MODULE = Image2DXYConfigModule

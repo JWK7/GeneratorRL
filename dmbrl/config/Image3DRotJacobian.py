@@ -23,7 +23,7 @@ class Image3DRotConfigModule:
 
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image3DRot'
-        self.exp_cfg.iteration = 1000000
+        self.exp_cfg.iteration = 500
         self.exp_cfg.alpha = 0.0001
         self.exp_cfg.beta = 0.0001
         self.exp_cfg.data_size = 50
@@ -61,13 +61,13 @@ class Image3DRotConfigModule:
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
-        jacobian , xGI0 = self.CombineGenerators_(generator_target_index,generators,I0,x)
+        jacobian , xG = self.CombineGenerators_(generator_target_index,generators,I0,x)
     
-        # xGI0 = torch.linalg.matmul(xG.float(),I0)
+        xGI0 = torch.linalg.matmul(xG.float(),I0)
 
         loss = nn.MSELoss()
         generators[generator_target_index].optimG.zero_grad()
-        grad = loss(xGI0.squeeze(),deltaI.squeeze())#+torch.sum(torch.abs(jacobian))
+        grad = loss(xGI0.squeeze(),deltaI.squeeze())+torch.sum(torch.abs(jacobian))
         grad.backward()
         generators[generator_target_index].optimG.step()
 
@@ -76,12 +76,6 @@ class Image3DRotConfigModule:
     def CombineGenerators_(self,generator_target_index,generators,I0,x):
         Gs = self.GetGeneratorPredictions(generator_target_index,generators,I0,x)
         jacobian = self.GetJacobian(Gs)
-
-        xGI0 = I0
-        for i in Gs:
-            xGI0 = torch.linalg.matmul(i.float(),xGI0)
-        return jacobian , xGI0
-
         return jacobian , Gs[0] + Gs[1] + Gs[2]
     
     def GetJacobian(self,Gs):

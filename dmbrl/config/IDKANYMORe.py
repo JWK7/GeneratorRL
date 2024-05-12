@@ -27,12 +27,12 @@ class Image3DRotConfigModule:
         self.exp_cfg.alpha = 0.0001
         self.exp_cfg.beta = 0.0001
         self.exp_cfg.data_size = 50
-        self.exp_cfg.num_generators = 3
+        self.exp_cfg.num_generators = 2
         self.exp_cfg.image_dim_base = 3
         self.exp_cfg.image_dim_dim = 3
         self.exp_cfg.image_dim = (pow(self.exp_cfg.image_dim_base,self.exp_cfg.image_dim_dim),)
         self.exp_cfg.generator_dim = (pow(self.exp_cfg.image_dim_base,self.exp_cfg.image_dim_dim),pow(self.exp_cfg.image_dim_base,self.exp_cfg.image_dim_dim))
-        self.exp_cfg.T = 90
+        self.exp_cfg.T = 5
         # self.exp_cfg.ground_truth_generator = np.reshape(pd.read_csv("dmbrl/assets/Translation1D20Pixels.csv",header=None).to_numpy(),(20,20))
     
     def _create_tool_cfg(self):
@@ -61,27 +61,22 @@ class Image3DRotConfigModule:
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 
     def UpdateG(self,generator_target_index,generators,I0,deltaI,x):
-        jacobian , xGI0 = self.CombineGenerators_(generator_target_index,generators,I0,x)
+        xG = self.GetGeneratorPredictions(generator_target_index,generators,I0,x)
     
-        # xGI0 = torch.linalg.matmul(xG.float(),I0)
-
+        xGI0 = I0
+        for i in xG:
+            xGI0 = torch.linalg.matmul(i.float(),xGI0)
         loss = nn.MSELoss()
         generators[generator_target_index].optimG.zero_grad()
         grad = loss(xGI0.squeeze(),deltaI.squeeze())#+torch.sum(torch.abs(jacobian))
         grad.backward()
         generators[generator_target_index].optimG.step()
 
-        return (grad.detach(),torch.sum(torch.abs(jacobian)))
+        return grad.detach()
 
     def CombineGenerators_(self,generator_target_index,generators,I0,x):
         Gs = self.GetGeneratorPredictions(generator_target_index,generators,I0,x)
         jacobian = self.GetJacobian(Gs)
-
-        xGI0 = I0
-        for i in Gs:
-            xGI0 = torch.linalg.matmul(i.float(),xGI0)
-        return jacobian , xGI0
-
         return jacobian , Gs[0] + Gs[1] + Gs[2]
     
     def GetJacobian(self,Gs):

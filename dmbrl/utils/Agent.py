@@ -12,8 +12,14 @@ class Agent:
     def Sample(self):
         I0, Ix, deltaI, x = self.params.tool_cfg.sample()
         for i in range(len(self.params.tool_cfg.nn)):
+            
             loss = self.params.tool_cfg.UpdateG(i,self.params.tool_cfg.nn,I0,deltaI,x)
-            self.params.log_cfg.loss += loss,
+
+            if type(loss) is tuple:
+                self.params.log_cfg.loss += loss[0],
+                self.params.log_cfg.loss_jacobian += loss[1],
+            else:
+                self.params.log_cfg.loss += loss,
 
     def test(self):
         I0, Ix, deltaI, x = self.params.tool_cfg.sample()
@@ -28,6 +34,13 @@ class Agent:
             generator_count += 1
         plt.plot(np.array(self.params.log_cfg.loss))
         plt.savefig('outputs/loss.png')
+        plt.close()
+
+
+        if self.params.log_cfg.loss_jacobian:
+            plt.plot(np.array(self.params.log_cfg.loss_jacobian))
+            plt.savefig('outputs/loss_jacobian.png')
+            plt.close()
 
         combined_generator = self.params.tool_cfg.CombineGenerators(0,self.params.tool_cfg.nn,I0,x)[0].detach()
         heatmap= sns.heatmap(combined_generator)
