@@ -3,11 +3,12 @@ import cv2
 import pandas as pd
 import scipy
 def test2DImage():
-    predG1 = np.reshape(pd.read_csv("outputs/G_1.csv",header=None).to_numpy(),(400,400))
+    predG1 = np.reshape(pd.read_csv("outputs3/G_1.csv",header=None).to_numpy(),(8**3,8**3))
 
-    predG2 = np.reshape(pd.read_csv("outputs/G_2.csv",header=None).to_numpy(),(400,400))
+    predG2 = np.reshape(pd.read_csv("outputs3/G_2.csv",header=None).to_numpy(),(8**3,8**3))
     
     trueG = np.reshape(pd.read_csv("dmbrl/assets/Translation1D20Pixels.csv",header=None).to_numpy(),(20,20))
+
 
 
     processed = ProcessImage((20,20)).flatten()

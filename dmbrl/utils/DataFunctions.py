@@ -2,13 +2,17 @@ import numpy as np
 import scipy.ndimage
 import cv2
 import scipy
+import torch
+import math
 
 #Create Random Noise Image
 def NoiseImage(image_size: tuple) -> np.ndarray:
     if type(image_size) is not tuple:
         print('NoiseImage Function Must Input Tuple')
         exit()
-    return np.random.randint(0,255,image_size)
+    
+    
+    return np.random.randint(0,255,image_size)/255
 
 def Translation1DImage(I0: np.ndarray, x: float, G: np.ndarray) -> np.ndarray:
     xs = np.random.randint(0,2,(I0.shape[0],1,1))
@@ -18,33 +22,51 @@ def Translation1DImage(I0: np.ndarray, x: float, G: np.ndarray) -> np.ndarray:
     return np.array([xs]),Ix
 
 def Rotate2D(I0: np.ndarray,x: float):
-    xs = np.random.randint(0,2,(I0.shape[0],1,1))
-    xs[xs==0] = -1
+    # xs = np.random.randint(0,2,(I0.shape[0],1,1))
+    # xs[xs==0] = -1
+    # xs = xs*x
+    # print(xs)
+    # exit()
+    xs = np.random.uniform(-2,2,(I0.shape[0],1,1))
+    # xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
+    # xs1[xs1==0] = -1
     xs = xs*x
 
     rotated = np.zeros(I0.shape)
-    for i in range(I0.shape[0]): rotated[i] = scipy.ndimage.rotate(I0[i], xs[i,0,0], axes=(1,0),reshape=False,mode = 'wrap')
+    for i in range(I0.shape[0]): rotated[i] = scipy.ndimage.rotate(I0[i], xs[i,0,0], axes=(1,0),reshape=False,mode="wrap")
 
     return np.array([xs]), rotated
 
 def Rotate3D(I0: np.ndarray,x: float):
-    xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
-    xs1[xs1==0] = -1
+    # xs1 = np.random.uniform(-1,1,(I0.shape[0],1,1))
+    # xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
+    # xs1[xs1==0] = -1
+    xs1 = np.random.uniform(-2,2,(I0.shape[0],1,1))
     xs1 = xs1*x
 
-    xs2 = np.random.randint(0,2,(I0.shape[0],1,1))
-    xs2[xs2==0] = -1
+    # xs2 = np.random.randint(0,2,(I0.shape[0],1,1))
+    # xs2[xs2==0] = -1
+    xs2 = np.random.uniform(-2,2,(I0.shape[0],1,1))
     xs2 = xs2*x
 
-    xs3 = np.random.randint(0,2,(I0.shape[0],1,1))
-    xs3[xs3==0] = -1
+    # xs3 = np.random.randint(0,2,(I0.shape[0],1,1))
+    # xs3[xs3==0] = -1
+    xs3 = np.random.uniform(-2,2,(I0.shape[0],1,1))
     xs3 = xs3*x
 
     rotated = np.zeros(I0.shape)
+    rotated1 = np.zeros(I0.shape)
+    rotated2 = np.zeros(I0.shape)
+    
     for i in range(I0.shape[0]):
-        rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(1,0),reshape=False,mode = 'wrap')
-        rotated[i] = scipy.ndimage.rotate(I0[i], xs2[i,0,0], axes=(2,1),reshape=False,mode = 'wrap')
-        rotated[i] = scipy.ndimage.rotate(I0[i], xs3[i,0,0], axes=(0,2),reshape=False,mode = 'wrap')
+        rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(0,1),reshape=False)
+    #     rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(1,2),reshape=False)
+    # for i in range(I0.shape[0]):
+    #     rotated1[i] = scipy.ndimage.rotate(rotated[i], xs2[i,0,0], axes=(0,2),reshape=False)
+    # for i in range(I0.shape[0]):
+    #     rotated2[i] = scipy.ndimage.rotate(rotated1[i], xs3[i,0,0], axes=(0,1),reshape=False)
+        # rotated[i] = scipy.ndimage.rotate(I0[i], xs2[i,0,0], axes=(2,1),reshape=False)
+        # rotated[i] = scipy.ndimage.rotate(I0[i], xs3[i,0,0], axes=(1,0),reshape=False)
     return np.array([xs1,xs2,xs3]), rotated
 
 
@@ -77,6 +99,19 @@ def Translation2DImage(I0,x,G):
     Ix = np.matmul(I0_,expxG2)
     Ix = np.expand_dims(Ix,(-1,-2))
     return np.array([xs1,xs2]),Ix
+
+def exp_series(i,M):
+    # if len(M.shape) != 2:
+    #     print("Invalid M matrix")
+    #     exit()
+    if M.shape[-1] != M.shape[-2]:
+        print("Invalid M matrix")
+        exit()
+
+    if i == 0:
+        I = torch.eye(M.shape[-1])
+        return I.repeat(M.shape[0],1,1).to('cuda')
+    return (torch.matrix_power(M,i)/math.factorial(i))+exp_series(i-1,M)
 
 
 def Translation2DImageNoise(I0,x,G):

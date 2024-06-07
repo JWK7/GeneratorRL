@@ -23,7 +23,7 @@ class Image2DXYConfigModule:
 
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image2DXY'
-        self.exp_cfg.iteration = 100
+        self.exp_cfg.iteration = 5000
         self.exp_cfg.alpha = 0.0001
         self.exp_cfg.beta = 0.0001
         self.exp_cfg.data_size = 50
@@ -89,11 +89,23 @@ class Image2DXYConfigModule:
 
     def ApplyGenerator(self,generator,I0):
         xGI0 = torch.zeros(I0.shape, dtype=generator.dtype)
-        xGI0[:,0,0] = generator[:,0,0]
-        xGI0[:,0,0] = 0
+
+        #I0 Image
+        #yaxis
+        #0 1 2 3 x 
+        #0 0 0 0  0 
+        #0 0 0 0  1 
+        #0 0 0 0  2
+        #0 0 0 0  3
+
+        #Generator(3,3 matrix) * [x,y,1]transposed
+        #
         for i in range((I0.shape[1])):
+            #axis
             for j in range((I0.shape[2])):
                 loc = torch.matmul(generator,torch.tensor(([[[j],[i],[1]]])).float())[:,:,0].int()
+
+
                 xGI0[:,loc[:,1]%I0.shape[1],loc[:,0]%I0.shape[2]] = I0[:,i,j]
 
         # print(generator.data)
