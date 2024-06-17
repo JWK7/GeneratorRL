@@ -25,7 +25,7 @@ class PointEnv(MujocoEnv, utils.EzPickle):
         self, **kwargs
     ):
         self._reset_noise_scale = 0.01
-        observation_space = Box(low=-np.inf, high=np.inf, shape=(17,), dtype=np.float64)
+        observation_space = Box(low=-np.inf, high=np.inf, shape=(6,),dtype=np.float64)
         utils.EzPickle.__init__(self, **kwargs)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         MujocoEnv.__init__(self, '%s/assets/point.xml' % dir_path, 5, observation_space=observation_space, **kwargs)
@@ -58,24 +58,21 @@ class PointEnv(MujocoEnv, utils.EzPickle):
         observation = self._get_obs()
         # reward = rewards - ctrl_cost
         reward =0
-        terminated = 0
         info = {
         }
 
         if self.render_mode == "human":
             self.render()
-        return observation, reward, terminated, False, info
+        return observation, reward, False, False, info
 
     def reset_model(self):
-        noise_low = -self._reset_noise_scale
-        noise_high = self._reset_noise_scale
-
-        qpos = self.init_qpos + self.np_random.uniform(
-            low=noise_low, high=noise_high, size=self.model.nq
-        )
-        qvel = self.init_qvel + self.np_random.uniform(
-            low=noise_low, high=noise_high, size=self.model.nv
-        )
+        # noise_low = -self._reset_noise_scale
+        # noise_high = self._reset_noise_scale
+        qpos = self.init_qpos
+        #  + self.np_random.uniform(
+        #     low=noise_low, high=noise_high, size=self.model.nq
+        # )
+        qvel = self.init_qvel
         self.set_state(qpos, qvel)
 
         observation = self._get_obs()

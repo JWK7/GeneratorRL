@@ -1,6 +1,6 @@
 import dmbrl.utils.Agent as Agent
 import time
-from dmbrl.utils.DataFunctions import printProgressBar
+from dmbrl.utils.utils import printProgressBar
     
 class MBExperiment:
     def __init__(self,params):

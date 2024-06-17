@@ -23,13 +23,13 @@ class Image2DRotConfigModule:
 
     def _create_exp_cfg(self):
         self.exp_cfg.env = 'Image2DRot'
-        self.exp_cfg.iteration = 15000
+        self.exp_cfg.iteration = 15
         self.exp_cfg.alpha = 0.00005
         self.exp_cfg.beta = 0.00001
         self.exp_cfg.data_size = 64
         self.exp_cfg.num_generators = 1
-        self.exp_cfg.image_dim = (30*30,)
-        self.exp_cfg.generator_dim = (30*30,30*30)
+        self.exp_cfg.image_dim = (8*8,)
+        self.exp_cfg.generator_dim = (8*8,8*8)
         self.exp_cfg.T = 30
     
     def _create_tool_cfg(self):
@@ -48,11 +48,11 @@ class Image2DRotConfigModule:
         pass
 
     def sample(self,x=1):
-        I0 = DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+(20,20)))
+        I0 = DataFunctions.NoiseImage(((self.exp_cfg.data_size,)+(8,8)))
 
         x,Ix = DataFunctions.Rotate2D(I0,self.exp_cfg.T*x)
-        I0= I0.reshape((self.exp_cfg.data_size,)+(20*20,1))
-        Ix = Ix.reshape((self.exp_cfg.data_size,)+(20*20,1))
+        I0= I0.reshape((self.exp_cfg.data_size,)+(8*8,1))
+        Ix = Ix.reshape((self.exp_cfg.data_size,)+(8*8,1))
 
         return torch.Tensor(I0),torch.Tensor(Ix),torch.Tensor(Ix-I0),torch.Tensor(x)
 

@@ -1,142 +1,10 @@
+from multiprocessing import Process
+import gym
+import dmbrl.env
 import numpy as np
-import scipy.ndimage
-import cv2
-import scipy
 import torch
-import math
-
-#Create Random Noise Image
-def NoiseImage(image_size: tuple) -> np.ndarray:
-    if type(image_size) is not tuple:
-        print('NoiseImage Function Must Input Tuple')
-        exit()
-    
-    
-    return np.random.randint(0,255,image_size)/255
-
-def Translation1DImage(I0: np.ndarray, x: float, G: np.ndarray) -> np.ndarray:
-    xs = np.random.randint(0,2,(I0.shape[0],1,1))
-    xs[xs==0] = -1
-    xs = xs*x
-    Ix = np.matmul(scipy.linalg.expm(xs*G),I0)
-    return np.array([xs]),Ix
-
-def Rotate2D(I0: np.ndarray,x: float):
-    # xs = np.random.randint(0,2,(I0.shape[0],1,1))
-    # xs[xs==0] = -1
-    # xs = xs*x
-    # print(xs)
-    # exit()
-    xs = np.random.uniform(-2,2,(I0.shape[0],1,1))
-    # xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
-    # xs1[xs1==0] = -1
-    xs = xs*x
-
-    rotated = np.zeros(I0.shape)
-    for i in range(I0.shape[0]): rotated[i] = scipy.ndimage.rotate(I0[i], xs[i,0,0], axes=(1,0),reshape=False,mode="wrap")
-
-    return np.array([xs]), rotated
-
-def Rotate3D(I0: np.ndarray,x: float):
-    # xs1 = np.random.uniform(-1,1,(I0.shape[0],1,1))
-    # xs1 = np.random.randint(0,2,(I0.shape[0],1,1))
-    # xs1[xs1==0] = -1
-    xs1 = np.random.uniform(-2,2,(I0.shape[0],1,1))
-    xs1 = xs1*x
-
-    # xs2 = np.random.randint(0,2,(I0.shape[0],1,1))
-    # xs2[xs2==0] = -1
-    xs2 = np.random.uniform(-2,2,(I0.shape[0],1,1))
-    xs2 = xs2*x
-
-    # xs3 = np.random.randint(0,2,(I0.shape[0],1,1))
-    # xs3[xs3==0] = -1
-    xs3 = np.random.uniform(-2,2,(I0.shape[0],1,1))
-    xs3 = xs3*x
-
-    rotated = np.zeros(I0.shape)
-    rotated1 = np.zeros(I0.shape)
-    rotated2 = np.zeros(I0.shape)
-    
-    for i in range(I0.shape[0]):
-        rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(0,1),reshape=False)
-    #     rotated[i] = scipy.ndimage.rotate(I0[i], xs1[i,0,0], axes=(1,2),reshape=False)
-    # for i in range(I0.shape[0]):
-    #     rotated1[i] = scipy.ndimage.rotate(rotated[i], xs2[i,0,0], axes=(0,2),reshape=False)
-    # for i in range(I0.shape[0]):
-    #     rotated2[i] = scipy.ndimage.rotate(rotated1[i], xs3[i,0,0], axes=(0,1),reshape=False)
-        # rotated[i] = scipy.ndimage.rotate(I0[i], xs2[i,0,0], axes=(2,1),reshape=False)
-        # rotated[i] = scipy.ndimage.rotate(I0[i], xs3[i,0,0], axes=(1,0),reshape=False)
-    return np.array([xs1,xs2,xs3]), rotated
-
-
-def ProcessImage(ImageSize: tuple):
-    img = cv2.imread("dmbrl/assets/cat.png")
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    processed_img = cv2.resize(img_gray,ImageSize)
-    return processed_img
-
-def Translation2DImage(I0,x,G):
-    I0_ = np.reshape(I0,I0.shape[0:3])
-
-    I0_[0] = ProcessImage((20,20))
-    xs1 = np.random.randint(0,2,(I0.shape[0]))
-    xs1[xs1==0] = -1
-    xs1 = xs1*x
-
-    xs2 = np.random.randint(0,2,(I0.shape[0]))
-    xs2[xs2==0] = -1
-    xs2 = xs2*x
-
-    Ix = np.zeros(I0.shape)
-    for _ in range(G.ndim): 
-        xs1 = np.expand_dims(xs1,-1) 
-        xs2 = np.expand_dims(xs2,-1) 
-    expxG1 = scipy.linalg.expm(xs1*G)
-    expxG2 = scipy.linalg.expm(xs2*G)
-
-    I0_ = np.matmul(expxG1,I0_)
-    Ix = np.matmul(I0_,expxG2)
-    Ix = np.expand_dims(Ix,(-1,-2))
-    return np.array([xs1,xs2]),Ix
-
-def exp_series(i,M):
-    # if len(M.shape) != 2:
-    #     print("Invalid M matrix")
-    #     exit()
-    if M.shape[-1] != M.shape[-2]:
-        print("Invalid M matrix")
-        exit()
-
-    if i == 0:
-        I = torch.eye(M.shape[-1])
-        return I.repeat(M.shape[0],1,1).to('cuda')
-    return (torch.matrix_power(M,i)/math.factorial(i))+exp_series(i-1,M)
-
-
-def Translation2DImageNoise(I0,x,G):
-    I0_ = np.reshape(I0,I0.shape[0:3])
-
-    I0_[0] = ProcessImage((20,20))
-    xs1 = np.random.uniform(0,1,(I0.shape[0]))
-    xs1[xs1==0] = -1
-    xs1 = xs1*x
-
-    xs2 = np.random.randint(0,1,(I0.shape[0]))
-    xs2[xs2==0] = -1
-    xs2 = xs2*x
-
-    Ix = np.zeros(I0.shape)
-    for _ in range(G.ndim): 
-        xs1 = np.expand_dims(xs1,-1) 
-        xs2 = np.expand_dims(xs2,-1) 
-    expxG1 = scipy.linalg.expm(xs1*G)
-    expxG2 = scipy.linalg.expm(xs2*G)
-
-    I0_ = np.matmul(expxG1,I0_)
-    Ix = np.matmul(I0_,expxG2)
-    Ix = np.expand_dims(Ix,(-1,-2))
-    return np.array([xs1,xs2]),Ix
+from pandas import DataFrame
+from multiprocessing import Manager
 
 # Print iterations progress
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
@@ -159,3 +27,42 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     # Print New Line on Complete
     if iteration == total: 
         print()
+
+def clean_data(raw_data):
+    S_0 = []
+    S_t = []
+    deltaS = []
+    for i in raw_data:
+        s_0,s_t = (raw_data[i])
+        S_0.append(s_0)
+        S_t.append(s_t)
+        deltaS.append(s_t-s_0)
+    return torch.tensor(np.array([S_0,S_t,deltaS]),dtype=torch.float)
+
+def gym_sample(exp_cfg):
+    raw_data = thread_sampling(exp_cfg)
+    sim_data = clean_data(raw_data)
+    return sim_data
+
+def thread_sampling(exp_cfg):
+    threads = []
+    manager = Manager()
+    raw_data = manager.dict()
+    for i in range(exp_cfg.batch_size):
+        t = Process(target=threadSample,args=(i,exp_cfg,raw_data))
+        hi = t.start()
+        threads.append(t)
+    for thread in threads:
+        thread.join()
+    return raw_data
+
+def threadSample(i,exp_cfg,raw_data):
+    env = gym.make(exp_cfg.env_name, render_mode="rgb_array")
+    obs,_ = env.reset()
+    s_0 = obs
+    action = np.random.randint(0,2,exp_cfg.num_generators)
+    action[action==0] = -1
+    for _ in range(exp_cfg.step): obs,*_ = env.step(action)
+    s_t = obs
+    raw_data[i] = (s_0,s_t)
+    return 
