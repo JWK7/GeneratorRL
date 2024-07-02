@@ -59,6 +59,9 @@ def thread_sampling(exp_cfg):
 def threadSample(i,exp_cfg,raw_data):
     env = gym.make(exp_cfg.env_name, render_mode="rgb_array")
     obs,_ = env.reset()
+    action = np.random.randint(0,2,exp_cfg.num_generators)
+    action[action==0] = -1
+    for _ in range(exp_cfg.step): obs,*_ = env.step(action)
     s_0 = obs
     action = np.random.randint(0,2,exp_cfg.num_generators)
     action[action==0] = -1

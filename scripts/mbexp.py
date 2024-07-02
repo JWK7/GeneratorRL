@@ -8,6 +8,9 @@ from dmbrl.config import *
 
 from dmbrl.utils.MBExp import MBExperiment
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def main(env,ctrl_args):
     ctrl_args = DotMap(**{key: val for (key, val) in ctrl_args})
 

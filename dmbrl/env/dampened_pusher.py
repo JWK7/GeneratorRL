@@ -182,7 +182,9 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         self.viewer.cam.distance = 4.0
 
     def reset_model(self):
-        qpos = self.init_qpos
+        qpos = self.init_qpos +self.np_random.uniform(
+            low=-0.005, high=0.005, size=self.model.nv
+        )
 
         self.goal_pos = np.asarray([0, 0])
         # while True:

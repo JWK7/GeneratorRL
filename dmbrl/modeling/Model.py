@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import os
 import dmbrl.modeling.NeuralNet as NeuralNet
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 
 class Model():
@@ -14,10 +14,11 @@ class Model():
         # exit()
         # device = torch.device("cuda:"+str(cudaGPU) if torch.cuda.is_available() else torch.device("cpu"))
         device = torch.device("cuda" if torch.cuda.is_available() else torch.device("cpu"))
-        self.GNet = NeuralNet.Net(1,generator_dim,c)
-        self.xNet = NeuralNet.Net(1, (1,1),c)
+        self.GNet = NeuralNet.Net(1,generator_dim,1)
+        self.xNet = NeuralNet.Net(1, (1,1),1)
         # self.GNet = nn.DataParallel(self.GNet,device_ids = [3])
         self.GNet = self.GNet.to(device)
+        self.xNet = self.xNet.to(device)
         # self.xNet = self.xNet.to(device)
         # self.GNet = nn.DataParallel(GNet)
         self.device =device
@@ -36,8 +37,8 @@ class MujocoModel():
         # exit()
         # device = torch.device("cuda:"+str(cudaGPU) if torch.cuda.is_available() else torch.device("cpu"))
         device = torch.device("cuda" if torch.cuda.is_available() else torch.device("cpu"))
-        self.GNet = NeuralNet.Net(1,generator_dim,c)
-        self.xNet = NeuralNet.Net(1,(1,),c)
+        self.GNet = NeuralNet.Net(1,generator_dim,1)
+        self.xNet = NeuralNet.Net(1,(1,),1)
         # self.GNet = nn.DataParallel(self.GNet,device_ids = [3])
         self.GNet = self.GNet.to(device)
         # self.xNet = self.xNet.to(device)
